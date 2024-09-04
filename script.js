@@ -11,8 +11,27 @@ storedImage.src = storedImageSrc;
 let model;
 
 async function setupCamera() {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    cameraElement.srcObject = stream;
+    try {
+        // Lấy danh sách các thiết bị camera
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const backCamera = devices.find(device => device.kind === 'videoinput' && device.label.toLowerCase().includes('back'));
+        
+        if (backCamera) {
+            const constraints = {
+                video: {
+                    deviceId: backCamera.deviceId
+                }
+            };
+            
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            cameraElement.srcObject = stream;
+        } else {
+            console.error('Không tìm thấy camera sau.');
+        }
+    } catch (error) {
+        console.error('Lỗi khi thiết lập camera: ', error);
+    }
+    
     return new Promise((resolve) => {
         cameraElement.onloadedmetadata = () => {
             resolve();
