@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quét ảnh để mở video</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="camera-container">
+        <video id="camera" width="640" height="480" autoplay></video>
+    </div>
+    <div id="video-container" style="display:none;">
+        <video id="video" controls muted>
+            <source src="/video/thuyvd.mp4" type="video/mp4">
+            Trình duyệt của bạn không hỗ trợ thẻ video.
+        </video>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <script src="script.js"></script>
+</body>
+</html>

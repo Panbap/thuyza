@@ -1,0 +1,28 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Ẩn thanh cuộn */
+}
+
+#camera-container, #video-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Chiếm toàn bộ chiều cao cửa sổ */
+    width: 100vw; /* Chiếm toàn bộ chiều rộng cửa sổ */
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: black; /* Nền đen cho video */
+}
+
+#camera {
+    border: 1px solid black;
+    display: block; /* Đảm bảo video từ camera hiển thị đầy đủ */
+}
+
+#video {
+    max-width: 100%;
+    max-height: 100%;
+}
