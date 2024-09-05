@@ -11,27 +11,8 @@ storedImage.src = storedImageSrc;
 let model;
 
 async function setupCamera() {
-    try {
-        // Lấy danh sách các thiết bị camera
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const backCamera = devices.find(device => device.kind === 'videoinput' && device.label.toLowerCase().includes('back'));
-        
-        if (backCamera) {
-            const constraints = {
-                video: {
-                    deviceId: backCamera.deviceId
-                }
-            };
-            
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            cameraElement.srcObject = stream;
-        } else {
-            console.error('Không tìm thấy camera sau.');
-        }
-    } catch (error) {
-        console.error('Lỗi khi thiết lập camera: ', error);
-    }
-    
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    cameraElement.srcObject = stream;
     return new Promise((resolve) => {
         cameraElement.onloadedmetadata = () => {
             resolve();
@@ -50,7 +31,15 @@ async function detectFrame() {
     const context = canvas.getContext('2d');
     context.drawImage(cameraElement, 0, 0, canvas.width, canvas.height);
 
-    // So sánh ảnh quét với ảnh mẫu
+    const frameImage = new Image();
+    frameImage.src = canvas.toDataURL();
+    
+    // Tải ảnh quét vào mô hình
+    const predictions = await model.classify(canvas);
+
+    console.log('Dự đoán từ mô hình: ', predictions);
+
+    // So sánh dự đoán với ảnh mẫu
     const isMatch = await compareImages(storedImage, canvas);
 
     if (isMatch) {
@@ -75,9 +64,9 @@ async function compareImages(image, canvas) {
         imageCanvas.width = canvas.width;
         imageCanvas.height = canvas.height;
         const context = imageCanvas.getContext('2d');
-        context.drawImage(image, 0, 0, imageCanvas.width, imageCanvas.height);
+        context.drawImage(canvas, 0, 0, canvas.width, canvas.height);
 
-        // Lấy dữ liệu ảnh mẫu và ảnh quét
+        // So sánh ảnh mẫu và ảnh quét (phương pháp đơn giản)
         const imgData1 = context.getImageData(0, 0, imageCanvas.width, imageCanvas.height).data;
         const imgData2 = context.getImageData(0, 0, canvas.width, canvas.height).data;
 
@@ -88,25 +77,19 @@ async function compareImages(image, canvas) {
             const r1 = imgData1[i];
             const g1 = imgData1[i + 1];
             const b1 = imgData1[i + 2];
-            const a1 = imgData1[i + 3]; // Alpha (độ trong suốt)
-
             const r2 = imgData2[i];
             const g2 = imgData2[i + 1];
             const b2 = imgData2[i + 2];
-            const a2 = imgData2[i + 3]; // Alpha (độ trong suốt)
 
-            const diff = Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2) + Math.abs(a1 - a2);
+            const diff = Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
 
-            if (diff > 100) { // Điều chỉnh ngưỡng khác biệt
+            if (diff > 50) {
                 diffCount++;
             }
         }
 
-        // Xác định tỷ lệ sự khác biệt cho phép
-        const totalPixels = (canvas.width * canvas.height);
-        const threshold = totalPixels * 0.05; // 5% là ngưỡng khác biệt cho phép
-
-        if (diffCount < threshold) {
+        // Xác định tỷ lệ sự khác biệt để cho phép ảnh khớp
+        if (diffCount < (canvas.width * canvas.height * 0.01)) { // 1% là ngưỡng khác biệt cho phép
             isMatch = true;
         }
         
